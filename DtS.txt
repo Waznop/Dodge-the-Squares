@@ -1,0 +1,599 @@
+Pseudo-code within Game Maker (GML)
+
+Information about object: obj_player
+Sprite: spr_player
+Solid: false
+Visible: true
+Depth: -10
+Persistent: false
+Parent: 
+Mask: 
+
+No Physics Object
+Create Event:
+
+execute code:
+
+spd = 8
+
+state = 0
+
+Step Event:
+
+execute code:
+
+if x < 48
+{
+x=48
+}
+
+if x > room_width-48
+{
+x=room_width-48
+}
+
+left = obj_pause.x - obj_pause.sprite_xoffset
+right = obj_pause.x + obj_pause.sprite_xoffset
+top = obj_pause.y - obj_pause.sprite_yoffset
+bottom = obj_pause.y + obj_pause.sprite_yoffset
+
+if mouse_check_button_pressed(mb_left)
+{
+    if mouse_x <= right and mouse_x >= left and mouse_y >= top and mouse_y <= bottom
+    global.idle = true
+    else global.idle = false
+}
+
+if mouse_check_button(mb_left)
+{
+    if x div(16) = mouse_x div(16) or global.idle = true or global.pause = true
+    {
+        speed = 0
+    }
+    
+    else move_towards_point(mouse_x,y,spd)
+}
+
+else speed = 0
+
+if global.volume = 0
+audio_pause_sound(sd_bg)
+else
+audio_resume_sound(sd_bg)
+
+Collision Event with object obj_ai:
+
+execute code:
+
+with other instance_destroy()
+state += 1
+
+if global.music = 1
+{
+audio_play_sound(sd_touch,1,false)
+}
+
+if state > 2
+{
+ini_open("data.ini")
+bestscore = ini_read_real("Data", "Highscore", 0)
+ini_write_real("Data", "Latest score", global.point)
+
+if global.point > bestscore
+ini_write_real("Data", "Highscore", global.point)
+
+ini_close()
+
+room_goto(rm_menu)
+}
+
+Draw Event:
+
+execute code:
+
+image_speed=0
+
+draw_sprite(spr_player,state,x,y)
+
+---
+
+Information about object: obj_ai
+Sprite: spr_ai
+Solid: false
+Visible: true
+Depth: 0
+Persistent: false
+Parent: 
+Mask: 
+
+No Physics Object
+Create Event:
+
+execute code:
+
+skin = round(random_range(0,5))
+
+Step Event:
+
+execute code:
+
+if global.pause = false
+{
+vspeed = global.pace
+}
+else vspeed = 0
+
+if y >= room_height
+{
+    global.point += 1
+    instance_destroy()
+}
+
+Draw Event:
+
+execute code:
+
+image_speed = 0
+
+draw_sprite(spr_ai,skin,x,y)
+
+---
+
+Information about object: obj_spawn
+Sprite: 
+Solid: false
+Visible: true
+Depth: 0
+Persistent: false
+Parent: 
+Mask: 
+
+No Physics Object
+Create Event:
+
+execute code:
+
+randomize()
+
+reloadmax = 25
+reload = reloadmax
+
+global.pace = 20
+
+global.point = 0
+
+background_x[0] = global.bg1x
+background_x[1] = global.bg2x
+background_x[2] = global.bg3x
+background_x[3] = global.bg4x
+background_x[4] = global.bg5x
+background_x[5] = global.bg6x
+
+
+Step Event:
+
+execute code:
+
+if global.pause = false
+reload -= 1
+
+if reload <= 0 and global.pause = false
+{
+    xspawn = random_range(48, room_width-48)
+    instance_create(xspawn,y,obj_ai)
+    
+    if reloadmax > 5
+    {
+        reloadmax -=0.1
+    }
+    
+    reload = reloadmax
+    
+    if global. pace < 50
+    {
+        global.pace += 0.1
+    }
+}
+
+Draw Event:
+
+execute code:
+
+draw_set_font(ft_point)
+draw_set_color(c_black)
+draw_text(24,100,global.point)
+
+---
+
+Information about object: obj_pause
+Sprite: spr_pause
+Solid: false
+Visible: true
+Depth: -10
+Persistent: false
+Parent: 
+Mask: 
+
+No Physics Object
+Create Event:
+
+execute code:
+
+image_index = 0
+image_speed = 0
+
+global.idle = false
+
+global.pause = false
+
+Step Event:
+
+execute code:
+
+if global.idle = false
+image_index = 0
+
+if global.idle = true
+{
+image_index = 1
+
+if global.pause = false
+{
+if mouse_check_button_released(mb_left)
+    {
+        global.pause = true
+        global.idle = false
+        
+        if global.music = 1
+        {
+        audio_play_sound(sd_pts,1,false)
+        global.volume = 0
+        }
+        
+        instance_create(x,y+96,obj_stop)
+        instance_create(x,y+192,obj_music)
+        audio_sound_gain(sd_bg,global.volume,0)
+    }
+}
+
+else
+if global.pause = true
+{
+if mouse_check_button_released(mb_left)
+    {
+        if instance_exists(obj_stop)
+        {
+            with obj_stop instance_destroy()
+        }
+        
+        if instance_exists(obj_music)
+        {
+            with obj_music instance_destroy()
+        }
+    
+        global.pause = false
+        global.idle = false
+        
+        if global.music = 1
+        {
+        audio_play_sound(sd_pts,1,false)
+        global.volume = 0.2
+        audio_sound_gain(sd_bg,global.volume,2000)
+        }
+        
+    }
+}
+
+}
+
+Draw Event:
+
+execute code:
+
+draw_sprite(sprite_index,image_index,x,y)
+
+if global.pause = true
+{
+    draw_sprite(spr_paused,-1,room_width/2,room_height/2)
+    draw_sprite(spr_play,-1,x,y)
+}
+
+---
+
+Information about object: obj_play
+Sprite: spr_play
+Solid: false
+Visible: true
+Depth: -10
+Persistent: false
+Parent: 
+Mask: 
+
+No Physics Object
+Create Event:
+
+execute code:
+
+image_speed=0
+hit = false
+
+Step Event:
+
+execute code:
+
+left = x - sprite_xoffset
+right = x + sprite_xoffset
+top = y - sprite_yoffset
+bottom = y + sprite_yoffset
+
+if mouse_check_button_pressed(mb_left)
+{
+    if mouse_x <= right and mouse_x >= left and mouse_y >= top and mouse_y <= bottom
+    hit = true
+    else hit = false
+}
+
+if hit = false
+image_index = 0
+
+if hit = true
+{
+image_index = 1
+
+if mouse_check_button_released(mb_left)
+    {
+        if global.music = 1
+        {
+        audio_play_sound(sd_pts,1,false)
+        }
+        
+        global.bg1x = background_x[0]
+        global.bg2x = background_x[1]
+        global.bg3x = background_x[2]
+        global.bg4x = background_x[3]
+        global.bg5x = background_x[4]
+        global.bg6x = background_x[5]
+        
+        room_goto(rm_play)
+        hit = false
+    }
+}
+
+---
+
+Information about object: obj_ctrl
+Sprite: 
+Solid: false
+Visible: true
+Depth: 0
+Persistent: false
+Parent: 
+Mask: 
+
+No Physics Object
+Create Event:
+
+execute code:
+
+ini_open("data.ini")
+highscore = ini_read_real("Data", "Highscore", 0)
+latestscore = ini_read_real("Data", "Latest score", 52525)
+ini_close()
+
+
+if latestscore = 52525
+latestscore = "N/A"
+
+
+global.pause = 0
+
+Other Event: Game Start:
+
+execute code:
+
+global.bg1x = 0
+global.bg2x = 0
+global.bg3x = 0
+global.bg4x = 0
+global.bg5x = 0
+global.bg6x = 0
+
+
+Draw Event:
+
+execute code:
+
+draw_sprite(spr_name,-1,0,0)
+draw_set_font(ft_hs)
+draw_set_halign(fa_center)
+draw_text(room_width/2,room_height/2+128,"Highscore: "+string(highscore))
+draw_text(room_width/2,room_height/2+196,"Latest score: "+string(latestscore))
+draw_set_font(ft_credit)
+draw_set_halign(fa_left)
+draw_text(16,room_height-32,"Created by Waznop in 2014")
+
+---
+
+Information about object: obj_stop
+Sprite: spr_stop
+Solid: false
+Visible: true
+Depth: -10
+Persistent: false
+Parent: 
+Mask: 
+
+No Physics Object
+Create Event:
+
+execute code:
+
+image_speed = 0
+hit = false
+
+Step Event:
+
+execute code:
+
+left = x - sprite_xoffset
+right = x + sprite_xoffset
+top = y - sprite_yoffset
+bottom = y + sprite_yoffset
+currentroom = room_get_name(room)
+
+if mouse_check_button_pressed(mb_left)
+{
+    if mouse_x <= right and mouse_x >= left and mouse_y >= top and mouse_y <= bottom
+    hit = true
+    else hit = false
+}
+
+if hit = false
+image_index = 0
+
+if hit = true
+{
+image_index = 1
+
+if mouse_check_button_released(mb_left)
+    {
+        if currentroom = "rm_menu"
+        {
+            game_end()
+        }
+        
+        else if currentroom = "rm_play"
+        {
+            if global.music = 1
+                {
+                audio_play_sound(sd_pts,1,false)
+                global.volume = 0.2
+                audio_sound_gain(sd_bg,global.volume,2000)
+                }
+                            
+            room_goto(rm_menu)
+        }
+        
+        hit = false
+    }
+}
+
+---
+
+Information about object: obj_music
+Sprite: spr_music
+Solid: false
+Visible: true
+Depth: -10
+Persistent: false
+Parent: 
+Mask: 
+
+No Physics Object
+Create Event:
+
+execute code:
+
+image_speed = 0
+hit = false
+
+ini_open("data.ini")
+global.music = ini_read_real("Settings", "Music", 1)
+ini_close()
+
+if global.music = 1
+image_index = 0
+
+if global.music = 0
+image_index = 2
+
+Step Event:
+
+execute code:
+
+left = x - sprite_xoffset
+right = x + sprite_xoffset
+top = y - sprite_yoffset
+bottom = y + sprite_yoffset
+currentroom = room_get_name(room)
+
+if mouse_check_button_pressed(mb_left)
+{
+    if mouse_x <= right and mouse_x >= left and mouse_y >= top and mouse_y <= bottom
+    hit = true
+    else hit = false
+}
+
+if hit = false
+{
+if image_index = 1 then image_index = 0
+if image_index = 3 then image_index = 2
+}
+
+if hit = true
+{
+if image_index = 0 then image_index = 1
+if image_index = 2 then image_index = 3
+
+if mouse_check_button_released(mb_left)
+    {
+        if global.music = 0
+        {
+            global.music = 1
+            image_index = 0
+            
+            if global.pause = false
+            {
+            global.volume = 0.2
+            audio_sound_gain(sd_bg,global.volume,2000)
+            }
+            
+            ini_open("data.ini")
+            ini_write_real("Settings", "Music", global.music)
+            ini_close()
+        }
+        
+        else if global.music = 1
+        {
+            global.music = 0
+            image_index = 2
+            
+            global.volume = 0
+            audio_sound_gain(sd_bg,global.volume,0)
+            
+            ini_open("data.ini")
+            ini_write_real("Settings", "Music", global.music)
+            ini_close()
+        }
+        
+        hit = false
+    }
+}
+
+if global.volume = 0
+audio_pause_sound(sd_bg)
+else
+audio_resume_sound(sd_bg)
+
+Other Event: Game Start:
+
+execute code:
+
+ini_open("data.ini")
+global.music = ini_read_real("Settings", "Music", 1)
+ini_close()
+
+if global.music = 0
+{
+global.volume = 0
+audio_sound_gain(sd_bg,global.volume,0)
+}
+
+audio_play_sound(sd_bg,1,true)
+
+if global.music = 1
+{
+global.volume = 0.2
+audio_sound_gain(sd_bg,global.volume,0)
+}
+
